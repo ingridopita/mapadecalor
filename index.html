@@ -1,0 +1,3166 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="css/leaflet.css">
+        <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
+        <link rel="stylesheet" href="css/L.Control.Locate.min.css">
+        <link rel="stylesheet" href="css/qgis2web.css">
+        <link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/leaflet-control-geocoder.Geocoder.css">
+        <link rel="stylesheet" href="css/leaflet-measure.css">
+        <style>
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        </style>
+        <title></title>
+    </head>
+    <body>
+        <div id="map">
+        </div>
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="js/leaflet.js"></script>
+        <script src="js/L.Control.Layers.Tree.min.js"></script>
+        <script src="js/L.Control.Locate.min.js"></script>
+        <script src="js/multi-style-layer.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="js/leaflet-control-geocoder.Geocoder.js"></script>
+        <script src="js/leaflet-measure.js"></script>
+        <script src="data/BairrosSalvador2017_1.js"></script>
+        <script src="data/GEOMANTAS_2.js"></script>
+        <script src="data/Trajetopercorrido_3.js"></script>
+        <script src="data/MapeamentoNoite_4.js"></script>
+        <script src="data/MapeamentoTarde_5.js"></script>
+        <script src="data/MapeamentoManh_6.js"></script>
+        <script>
+        var highlightLayer;
+        function highlightFeature(e) {
+            highlightLayer = e.target;
+            highlightLayer.openPopup();
+        }
+        var map = L.map('map', {
+            zoomControl:false, maxZoom:28, minZoom:1
+        }).fitBounds([[-13.0817630549419,-38.663366865824194],[-12.818163700567096,-38.212555618437335]]);
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
+        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+        // remove popup's row if "visible-with-data"
+        function removeEmptyRowsFromPopupContent(content, feature) {
+         var tempDiv = document.createElement('div');
+         tempDiv.innerHTML = content;
+         var rows = tempDiv.querySelectorAll('tr');
+         for (var i = 0; i < rows.length; i++) {
+             var td = rows[i].querySelector('td.visible-with-data');
+             var key = td ? td.id : '';
+             if (td && td.classList.contains('visible-with-data') && feature.properties[key] == null) {
+                 rows[i].parentNode.removeChild(rows[i]);
+             }
+         }
+         return tempDiv.innerHTML;
+        }
+        // add class to format popup if it contains media
+		function addClassToPopupIfMedia(content, popup) {
+			var tempDiv = document.createElement('div');
+			tempDiv.innerHTML = content;
+			if (tempDiv.querySelector('td img')) {
+				popup._contentNode.classList.add('media');
+					// Delay to force the redraw
+					setTimeout(function() {
+						popup.update();
+					}, 10);
+			} else {
+				popup._contentNode.classList.remove('media');
+			}
+		}
+        var zoomControl = L.control.zoom({
+            position: 'topleft'
+        }).addTo(map);
+        L.control.locate({locateOptions: {maxZoom: 19}}).addTo(map);
+        var measureControl = new L.Control.Measure({
+            position: 'topleft',
+            primaryLengthUnit: 'meters',
+            secondaryLengthUnit: 'kilometers',
+            primaryAreaUnit: 'sqmeters',
+            secondaryAreaUnit: 'hectares'
+        });
+        measureControl.addTo(map);
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0].innerHTML = '';
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0].className += ' fas fa-ruler';
+        var bounds_group = new L.featureGroup([]);
+        function setBounds() {
+        }
+        map.createPane('pane_GoogleSatellite_0');
+        map.getPane('pane_GoogleSatellite_0').style.zIndex = 400;
+        var layer_GoogleSatellite_0 = L.tileLayer('http://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+            pane: 'pane_GoogleSatellite_0',
+            opacity: 0.636,
+            attribution: '',
+            minZoom: 1,
+            maxZoom: 28,
+            minNativeZoom: 0,
+            maxNativeZoom: 22
+        });
+        layer_GoogleSatellite_0;
+        map.addLayer(layer_GoogleSatellite_0);
+        function pop_BairrosSalvador2017_1(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2"><strong>Bairros</strong><br />' + (feature.properties['NOME_BAIRR'] !== null ? autolinker.link(String(feature.properties['NOME_BAIRR']).replace(/'/g, '\'').replace(/"/g, '&quot;').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['AREA'] !== null ? autolinker.link(String(feature.properties['AREA']).replace(/'/g, '\'').replace(/"/g, '&quot;').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_BairrosSalvador2017_1_0(feature) {
+            switch(String(feature.properties['NOME_BAIRR'])) {
+                case 'Acupe':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(215,25,28,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Aeroporto':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(216,29,30,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Águas Claras':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(217,32,31,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Alto da Terezinha':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(218,36,33,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Alto das Pombas':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(219,39,34,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Alto do Cabrito':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(219,43,36,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Alto do Coqueirinho':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(220,46,38,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Amaralina':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(221,50,39,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Areia Branca':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(222,53,41,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Arenoso':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(223,57,43,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Arraial do Retiro':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(224,60,44,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Bairro da Paz':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(225,64,46,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Baixa de Quintas':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(226,67,47,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Barbalho':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(227,71,49,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Barra':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(228,74,51,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Barreiras':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(228,78,52,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Barris':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(229,81,54,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Beiru/Tancredo Neves':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(230,85,56,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Boa Viagem':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(231,88,57,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Boa Vista de Brotas':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(232,92,59,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Boa Vista de São Caetano':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(233,95,60,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Boca da Mata':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(234,99,62,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Boca do Rio':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(235,102,64,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Bom Juá':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(236,106,65,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Bonfim':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(236,109,67,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Brotas':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(237,113,69,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Cabula':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(238,116,70,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Cabula VI':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(239,120,72,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Caixa D´Água':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(240,123,73,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Cajazeiras II':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(241,127,75,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Cajazeiras IV':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(242,130,77,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Cajazeiras V':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(243,134,78,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Cajazeiras VI':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(244,137,80,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Cajazeiras VII':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(245,141,82,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Cajazeiras VIII':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(245,144,83,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Cajazeiras X':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(246,148,85,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Cajazeiras XI':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(247,151,86,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Calabar':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(248,155,88,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Calabetão':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(249,158,90,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Calçada':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(250,162,91,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Caminho das Árvores':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(251,165,93,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Caminho de Areia':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(252,169,95,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Campinas de Pirajá':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(253,172,96,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Canabrava':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(253,175,98,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Candeal':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(253,177,100,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Canela':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(253,179,103,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Capelinha':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(253,181,105,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Cassange':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(253,183,107,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Castelo Branco':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(253,184,109,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Centro':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(253,186,111,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Centro Administrativo da Bahia':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(253,188,114,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Centro Histórico':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(253,190,116,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chame-Chame':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(253,192,118,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chapada do Rio Vermelho':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(253,194,120,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Cidade Nova':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(254,196,122,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Colinas de Periperi':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(254,198,125,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Comércio':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(254,200,127,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Cosme de Farias':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(254,202,129,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Costa Azul':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(254,204,131,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Coutos':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(254,205,133,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Curuzu':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(254,207,136,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Dois de Julho':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(254,209,138,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Dom Avelar':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(254,211,140,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Doron':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(254,213,142,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Engenho Velho da Federação':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(254,215,145,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Engenho Velho de Brotas':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(254,217,147,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Engomadeira':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(254,219,149,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Fazenda Coutos':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(254,221,151,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Fazenda Grande do Retiro':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(254,223,153,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Fazenda Grande I':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(254,225,156,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Fazenda Grande II':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(254,226,158,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Fazenda Grande III':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(254,228,160,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Fazenda Grande IV':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(254,230,162,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Federação':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(254,232,164,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Garcia':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(254,234,167,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Graça':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,236,169,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Granjas Rurais Presidente Vargas':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,238,171,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Horto Florestal':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,240,173,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'IAPI':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,242,176,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Ilha Amarela':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,244,178,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Ilha de Bom Jesus dos Passos':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,245,180,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Ilha de Maré':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,247,182,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Ilha dos Frades/Ilha de Santo Antônio':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,249,184,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Imbuí':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,251,187,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Itacaranha':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,253,189,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Itaigara':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,255,191,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Itapuã':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(253,254,190,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Itinga':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(251,253,190,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Jaguaripe I':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(249,253,189,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Jardim Armação':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(247,252,188,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Jardim Cajazeiras':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(245,251,188,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Jardim das Margaridas':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(243,250,187,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Jardim Nova Esperança':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(241,249,187,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Jardim Santo Inácio':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(239,249,186,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Lapinha':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(237,248,185,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Liberdade':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(235,247,185,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Lobato':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(233,246,184,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Luiz Anselmo':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(231,245,183,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Macaúbas':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(229,245,183,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Mangueira':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(227,244,182,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Marechal Rondon':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(225,243,181,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Mares':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(223,242,181,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Massaranduba':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(221,241,180,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Mata Escura':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(219,241,180,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Matatu':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(217,240,179,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Mirantes de Periperi':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(215,239,178,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Monte Serrat':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(213,238,178,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Moradas da Lagoa':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(212,237,177,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Mussurunga':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(210,237,176,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Narandiba':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(208,236,176,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Nazaré':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(206,235,175,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Nordeste de Amaralina':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(204,234,174,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Nova Brasília':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(202,233,174,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Nova Constituinte':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(200,233,173,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Nova Esperança':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(198,232,173,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Nova Sussuarana':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(196,231,172,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Novo Horizonte':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(194,230,171,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Novo Marotinho':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(192,229,171,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Ondina':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(190,229,170,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Palestina':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(188,228,169,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Paripe':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(186,227,169,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Patamares':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(184,226,168,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Pau da Lima':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(182,225,167,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Pau Miúdo':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(180,225,167,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Periperi':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(178,224,166,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Pernambués':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(176,223,166,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Pero Vaz':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(174,222,165,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Piatã':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(172,221,164,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Pirajá':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(169,220,164,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Pituaçu':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(166,218,165,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Pituba':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(163,216,165,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Plataforma':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(160,214,166,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Porto Seco Pirajá':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(157,211,166,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Praia Grande':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(154,209,167,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Resgate':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(151,207,167,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Retiro':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(148,205,168,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Ribeira':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(145,203,168,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Rio Sena':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(142,201,169,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Rio Vermelho':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(139,199,169,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Roma':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(136,197,170,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Saboeiro':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(133,195,170,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Santa Cruz':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(130,192,171,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Santa Luzia':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(127,190,172,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Santa Mônica':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(124,188,172,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Santo Agostinho':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(121,186,173,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Santo Antônio':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(118,184,173,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'São Caetano':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(115,182,174,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'São Cristóvão':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(112,180,174,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'São Gonçalo':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(109,178,175,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'São João do Cabrito':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(106,175,175,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'São Marcos':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(103,173,176,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'São Rafael':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(100,171,176,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'São Tomé':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(97,169,177,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Saramandaia':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(94,167,177,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Saúde':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(91,165,178,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Sete de Abril':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(88,163,178,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Stella Maris':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(85,161,179,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'STIEP':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(82,159,179,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Sussuarana':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(79,156,180,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Tororó':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(76,154,180,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Trobogy':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(73,152,181,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Uruguai':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(70,150,181,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Vale das Pedrinhas':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(67,148,182,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Vale dos Lagos':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(64,146,182,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Valéria':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(61,144,183,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Vila Canária':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(58,142,183,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Vila Laura':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(55,139,184,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Vila Ruy Barbosa\Jardim Cruzeiro':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(52,137,184,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Vista Alegre':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(49,135,185,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Vitória':
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(46,133,185,1.0)',
+                interactive: true,
+            }
+                    break;
+                default:
+                    return {
+                pane: 'pane_BairrosSalvador2017_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(43,131,186,1.0)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_BairrosSalvador2017_1');
+        map.getPane('pane_BairrosSalvador2017_1').style.zIndex = 401;
+        map.getPane('pane_BairrosSalvador2017_1').style['mix-blend-mode'] = 'normal';
+        var layer_BairrosSalvador2017_1 = new L.geoJson(json_BairrosSalvador2017_1, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_BairrosSalvador2017_1',
+            layerName: 'layer_BairrosSalvador2017_1',
+            pane: 'pane_BairrosSalvador2017_1',
+            onEachFeature: pop_BairrosSalvador2017_1,
+            style: style_BairrosSalvador2017_1_0,
+        });
+        bounds_group.addLayer(layer_BairrosSalvador2017_1);
+        map.addLayer(layer_BairrosSalvador2017_1);
+        function pop_GEOMANTAS_2(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td class="visible-with-data" id="logradouro" colspan="2"><strong>Logradouro</strong><br />' + (feature.properties['logradouro'] !== null ? autolinker.link(String(feature.properties['logradouro']).replace(/'/g, '\'').replace(/"/g, '&quot;').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="bairro" colspan="2"><strong>Bairro</strong><br />' + (feature.properties['bairro'] !== null ? autolinker.link(String(feature.properties['bairro']).replace(/'/g, '\'').replace(/"/g, '&quot;').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['conclusao'] !== null ? autolinker.link(String(feature.properties['conclusao']).replace(/'/g, '\'').replace(/"/g, '&quot;').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['area'] !== null ? autolinker.link(String(feature.properties['area']).replace(/'/g, '\'').replace(/"/g, '&quot;').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Ano</strong><br />' + (feature.properties['ano'] !== null ? autolinker.link(String(feature.properties['ano']).replace(/'/g, '\'').replace(/"/g, '&quot;').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_GEOMANTAS_2_0() {
+            return {
+                pane: 'pane_GEOMANTAS_2',
+                interactive: true,
+            }
+        }
+        function style_GEOMANTAS_2_1() {
+            return {
+                pane: 'pane_GEOMANTAS_2',
+                opacity: 1,
+                color: 'rgba(128,14,16,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fillOpacity: 0,
+                interactive: true,
+            }
+        }
+        map.createPane('pane_GEOMANTAS_2');
+        map.getPane('pane_GEOMANTAS_2').style.zIndex = 402;
+        map.getPane('pane_GEOMANTAS_2').style['mix-blend-mode'] = 'normal';
+        var layer_GEOMANTAS_2 = new L.geoJson.multiStyle(json_GEOMANTAS_2, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_GEOMANTAS_2',
+            layerName: 'layer_GEOMANTAS_2',
+            pane: 'pane_GEOMANTAS_2',
+            onEachFeature: pop_GEOMANTAS_2,
+            styles: [style_GEOMANTAS_2_0,style_GEOMANTAS_2_1,]
+        });
+        bounds_group.addLayer(layer_GEOMANTAS_2);
+        map.addLayer(layer_GEOMANTAS_2);
+        function pop_Trajetopercorrido_3(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+        }
+
+        function style_Trajetopercorrido_3_0() {
+            return {
+                pane: 'pane_Trajetopercorrido_3',
+                opacity: 1,
+                color: 'rgba(247,247,247,1.0)',
+                dashArray: '',
+                lineCap: 'round',
+                lineJoin: 'round',
+                weight: 3.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+        }
+        map.createPane('pane_Trajetopercorrido_3');
+        map.getPane('pane_Trajetopercorrido_3').style.zIndex = 403;
+        map.getPane('pane_Trajetopercorrido_3').style['mix-blend-mode'] = 'normal';
+        var layer_Trajetopercorrido_3 = new L.geoJson(json_Trajetopercorrido_3, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_Trajetopercorrido_3',
+            layerName: 'layer_Trajetopercorrido_3',
+            pane: 'pane_Trajetopercorrido_3',
+            onEachFeature: pop_Trajetopercorrido_3,
+            style: style_Trajetopercorrido_3_0,
+        });
+        bounds_group.addLayer(layer_Trajetopercorrido_3);
+        map.addLayer(layer_Trajetopercorrido_3);
+        function pop_MapeamentoNoite_4(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2"><strong>Altitude</strong><br />' + (feature.properties['altitude'] !== null ? autolinker.link(String(feature.properties['altitude']).replace(/'/g, '\'').replace(/"/g, '&quot;').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Umidade</strong><br />' + (feature.properties['humidity'] !== null ? autolinker.link(String(feature.properties['humidity']).replace(/'/g, '\'').replace(/"/g, '&quot;').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Temperatura do ar</strong><br />' + (feature.properties['temperature'] !== null ? autolinker.link(String(feature.properties['temperature']).replace(/'/g, '\'').replace(/"/g, '&quot;').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_MapeamentoNoite_4_0(feature) {
+            if (feature.properties['temperature'] >= 24.990000 && feature.properties['temperature'] <= 27.690000 ) {
+                return {
+                pane: 'pane_MapeamentoNoite_4',
+                radius: 4.0,
+                stroke: false,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,245,240,0.8)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['temperature'] >= 27.690000 && feature.properties['temperature'] <= 27.950000 ) {
+                return {
+                pane: 'pane_MapeamentoNoite_4',
+                radius: 4.0,
+                stroke: false,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(252,164,134,0.8)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['temperature'] >= 27.950000 && feature.properties['temperature'] <= 28.230000 ) {
+                return {
+                pane: 'pane_MapeamentoNoite_4',
+                radius: 4.0,
+                stroke: false,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(234,55,42,0.8)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['temperature'] >= 28.230000 && feature.properties['temperature'] <= 29.240000 ) {
+                return {
+                pane: 'pane_MapeamentoNoite_4',
+                radius: 4.0,
+                stroke: false,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(103,0,13,0.8)',
+                interactive: true,
+            }
+            }
+        }
+        map.createPane('pane_MapeamentoNoite_4');
+        map.getPane('pane_MapeamentoNoite_4').style.zIndex = 404;
+        map.getPane('pane_MapeamentoNoite_4').style['mix-blend-mode'] = 'normal';
+        var layer_MapeamentoNoite_4 = new L.geoJson(json_MapeamentoNoite_4, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_MapeamentoNoite_4',
+            layerName: 'layer_MapeamentoNoite_4',
+            pane: 'pane_MapeamentoNoite_4',
+            onEachFeature: pop_MapeamentoNoite_4,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_MapeamentoNoite_4_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_MapeamentoNoite_4);
+        map.addLayer(layer_MapeamentoNoite_4);
+        function pop_MapeamentoTarde_5(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2"><strong>Altitude</strong><br />' + (feature.properties['altitude'] !== null ? autolinker.link(String(feature.properties['altitude']).replace(/'/g, '\'').replace(/"/g, '&quot;').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Umidade</strong><br />' + (feature.properties['humidity'] !== null ? autolinker.link(String(feature.properties['humidity']).replace(/'/g, '\'').replace(/"/g, '&quot;').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Temperatura do ar</strong><br />' + (feature.properties['temperature'] !== null ? autolinker.link(String(feature.properties['temperature']).replace(/'/g, '\'').replace(/"/g, '&quot;').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_MapeamentoTarde_5_0(feature) {
+            if (feature.properties['temperature'] >= 29.040000 && feature.properties['temperature'] <= 30.450000 ) {
+                return {
+                pane: 'pane_MapeamentoTarde_5',
+                radius: 4.0,
+                stroke: false,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,245,240,0.8)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['temperature'] >= 30.450000 && feature.properties['temperature'] <= 30.940000 ) {
+                return {
+                pane: 'pane_MapeamentoTarde_5',
+                radius: 4.0,
+                stroke: false,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(252,164,134,0.8)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['temperature'] >= 30.940000 && feature.properties['temperature'] <= 31.720000 ) {
+                return {
+                pane: 'pane_MapeamentoTarde_5',
+                radius: 4.0,
+                stroke: false,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(234,55,42,0.8)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['temperature'] >= 31.720000 && feature.properties['temperature'] <= 34.090000 ) {
+                return {
+                pane: 'pane_MapeamentoTarde_5',
+                radius: 4.0,
+                stroke: false,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(103,0,13,0.8)',
+                interactive: true,
+            }
+            }
+        }
+        map.createPane('pane_MapeamentoTarde_5');
+        map.getPane('pane_MapeamentoTarde_5').style.zIndex = 405;
+        map.getPane('pane_MapeamentoTarde_5').style['mix-blend-mode'] = 'normal';
+        var layer_MapeamentoTarde_5 = new L.geoJson(json_MapeamentoTarde_5, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_MapeamentoTarde_5',
+            layerName: 'layer_MapeamentoTarde_5',
+            pane: 'pane_MapeamentoTarde_5',
+            onEachFeature: pop_MapeamentoTarde_5,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_MapeamentoTarde_5_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_MapeamentoTarde_5);
+        map.addLayer(layer_MapeamentoTarde_5);
+        function pop_MapeamentoManh_6(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2"><strong>Altitude</strong><br />' + (feature.properties['altitude'] !== null ? autolinker.link(String(feature.properties['altitude']).replace(/'/g, '\'').replace(/"/g, '&quot;').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Umidade</strong><br />' + (feature.properties['humidity'] !== null ? autolinker.link(String(feature.properties['humidity']).replace(/'/g, '\'').replace(/"/g, '&quot;').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Temperatura do ar</strong><br />' + (feature.properties['temperature'] !== null ? autolinker.link(String(feature.properties['temperature']).replace(/'/g, '\'').replace(/"/g, '&quot;').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_MapeamentoManh_6_0(feature) {
+            if (feature.properties['temperature'] >= 25.990000 && feature.properties['temperature'] <= 26.740000 ) {
+                return {
+                pane: 'pane_MapeamentoManh_6',
+                radius: 4.0,
+                stroke: false,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,245,240,0.8)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['temperature'] >= 26.740000 && feature.properties['temperature'] <= 27.130000 ) {
+                return {
+                pane: 'pane_MapeamentoManh_6',
+                radius: 4.0,
+                stroke: false,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(252,164,134,0.8)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['temperature'] >= 27.130000 && feature.properties['temperature'] <= 27.860000 ) {
+                return {
+                pane: 'pane_MapeamentoManh_6',
+                radius: 4.0,
+                stroke: false,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(234,55,42,0.8)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['temperature'] >= 27.860000 && feature.properties['temperature'] <= 32.190000 ) {
+                return {
+                pane: 'pane_MapeamentoManh_6',
+                radius: 4.0,
+                stroke: false,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(103,0,13,0.8)',
+                interactive: true,
+            }
+            }
+        }
+        map.createPane('pane_MapeamentoManh_6');
+        map.getPane('pane_MapeamentoManh_6').style.zIndex = 406;
+        map.getPane('pane_MapeamentoManh_6').style['mix-blend-mode'] = 'normal';
+        var layer_MapeamentoManh_6 = new L.geoJson(json_MapeamentoManh_6, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_MapeamentoManh_6',
+            layerName: 'layer_MapeamentoManh_6',
+            pane: 'pane_MapeamentoManh_6',
+            onEachFeature: pop_MapeamentoManh_6,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_MapeamentoManh_6_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_MapeamentoManh_6);
+        map.addLayer(layer_MapeamentoManh_6);
+        var osmGeocoder = new L.Control.Geocoder({
+            collapsed: true,
+            position: 'topleft',
+            text: 'Search',
+            title: 'Testing'
+        }).addTo(map);
+        document.getElementsByClassName('leaflet-control-geocoder-icon')[0]
+        .className += ' fa fa-search';
+        document.getElementsByClassName('leaflet-control-geocoder-icon')[0]
+        .title += 'Search for a place';
+        var overlaysTree = [
+        {label: '<b>ROTA 3</b>', selectAllCheckbox: true, children: [
+            {label: 'Mapeamento - Manhã<br /><table><tr><td style="text-align: center;"><img src="legend/MapeamentoManh_6_259926740.png" /></td><td>25,99 - 26,74</td></tr><tr><td style="text-align: center;"><img src="legend/MapeamentoManh_6_267427131.png" /></td><td>26,74 - 27,13</td></tr><tr><td style="text-align: center;"><img src="legend/MapeamentoManh_6_271327862.png" /></td><td>27,13 - 27,86</td></tr><tr><td style="text-align: center;"><img src="legend/MapeamentoManh_6_278632193.png" /></td><td>27,86 - 32,19</td></tr></table>', layer: layer_MapeamentoManh_6},
+            {label: 'Mapeamento - Tarde<br /><table><tr><td style="text-align: center;"><img src="legend/MapeamentoTarde_5_290430450.png" /></td><td>29,04 - 30,45</td></tr><tr><td style="text-align: center;"><img src="legend/MapeamentoTarde_5_304530941.png" /></td><td>30,45 - 30,94</td></tr><tr><td style="text-align: center;"><img src="legend/MapeamentoTarde_5_309431722.png" /></td><td>30,94 - 31,72</td></tr><tr><td style="text-align: center;"><img src="legend/MapeamentoTarde_5_317234093.png" /></td><td>31,72 - 34,09</td></tr></table>', layer: layer_MapeamentoTarde_5},
+            {label: 'Mapeamento - Noite<br /><table><tr><td style="text-align: center;"><img src="legend/MapeamentoNoite_4_249927690.png" /></td><td>24,99 - 27,69</td></tr><tr><td style="text-align: center;"><img src="legend/MapeamentoNoite_4_276927951.png" /></td><td>27,69 - 27,95</td></tr><tr><td style="text-align: center;"><img src="legend/MapeamentoNoite_4_279528232.png" /></td><td>27,95 - 28,23</td></tr><tr><td style="text-align: center;"><img src="legend/MapeamentoNoite_4_282329243.png" /></td><td>28,23 - 29,24</td></tr></table>', layer: layer_MapeamentoNoite_4},
+            {label: '<img src="legend/Trajetopercorrido_3.png" /> Trajeto percorrido', layer: layer_Trajetopercorrido_3},]},
+        {label: '<b>Consulta CODESAL</b>', selectAllCheckbox: true, children: [
+            {label: '<img src="legend/GEOMANTAS_2.png" /> GEOMANTAS ', layer: layer_GEOMANTAS_2},]},
+            {label: 'Bairros Salvador 2017<br /><table><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Acupe0.png" /></td><td>Acupe</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Aeroporto1.png" /></td><td>Aeroporto</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_ÁguasClaras2.png" /></td><td>Águas Claras</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_AltodaTerezinha3.png" /></td><td>Alto da Terezinha</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_AltodasPombas4.png" /></td><td>Alto das Pombas</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_AltodoCabrito5.png" /></td><td>Alto do Cabrito</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_AltodoCoqueirinho6.png" /></td><td>Alto do Coqueirinho</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Amaralina7.png" /></td><td>Amaralina</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_AreiaBranca8.png" /></td><td>Areia Branca</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Arenoso9.png" /></td><td>Arenoso</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_ArraialdoRetiro10.png" /></td><td>Arraial do Retiro</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_BairrodaPaz11.png" /></td><td>Bairro da Paz</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_BaixadeQuintas12.png" /></td><td>Baixa de Quintas</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Barbalho13.png" /></td><td>Barbalho</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Barra14.png" /></td><td>Barra</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Barreiras15.png" /></td><td>Barreiras</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Barris16.png" /></td><td>Barris</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_BeiruTancredoNeves17.png" /></td><td>Beiru/Tancredo Neves</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_BoaViagem18.png" /></td><td>Boa Viagem</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_BoaVistadeBrotas19.png" /></td><td>Boa Vista de Brotas</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_BoaVistadeSãoCaetano20.png" /></td><td>Boa Vista de São Caetano</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_BocadaMata21.png" /></td><td>Boca da Mata</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_BocadoRio22.png" /></td><td>Boca do Rio</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_BomJuá23.png" /></td><td>Bom Juá</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Bonfim24.png" /></td><td>Bonfim</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Brotas25.png" /></td><td>Brotas</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Cabula26.png" /></td><td>Cabula</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_CabulaVI27.png" /></td><td>Cabula VI</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_CaixaDÁgua28.png" /></td><td>Caixa D´Água</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_CajazeirasII29.png" /></td><td>Cajazeiras II</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_CajazeirasIV30.png" /></td><td>Cajazeiras IV</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_CajazeirasV31.png" /></td><td>Cajazeiras V</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_CajazeirasVI32.png" /></td><td>Cajazeiras VI</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_CajazeirasVII33.png" /></td><td>Cajazeiras VII</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_CajazeirasVIII34.png" /></td><td>Cajazeiras VIII</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_CajazeirasX35.png" /></td><td>Cajazeiras X</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_CajazeirasXI36.png" /></td><td>Cajazeiras XI</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Calabar37.png" /></td><td>Calabar</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Calabetão38.png" /></td><td>Calabetão</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Calçada39.png" /></td><td>Calçada</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_CaminhodasÁrvores40.png" /></td><td>Caminho das Árvores</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_CaminhodeAreia41.png" /></td><td>Caminho de Areia</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_CampinasdePirajá42.png" /></td><td>Campinas de Pirajá</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Canabrava43.png" /></td><td>Canabrava</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Candeal44.png" /></td><td>Candeal</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Canela45.png" /></td><td>Canela</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Capelinha46.png" /></td><td>Capelinha</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Cassange47.png" /></td><td>Cassange</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_CasteloBranco48.png" /></td><td>Castelo Branco</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Centro49.png" /></td><td>Centro</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_CentroAdministrativodaBahia50.png" /></td><td>Centro Administrativo da Bahia</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_CentroHistórico51.png" /></td><td>Centro Histórico</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_ChameChame52.png" /></td><td>Chame-Chame</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_ChapadadoRioVermelho53.png" /></td><td>Chapada do Rio Vermelho</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_CidadeNova54.png" /></td><td>Cidade Nova</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_ColinasdePeriperi55.png" /></td><td>Colinas de Periperi</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Comércio56.png" /></td><td>Comércio</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_CosmedeFarias57.png" /></td><td>Cosme de Farias</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_CostaAzul58.png" /></td><td>Costa Azul</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Coutos59.png" /></td><td>Coutos</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Curuzu60.png" /></td><td>Curuzu</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_DoisdeJulho61.png" /></td><td>Dois de Julho</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_DomAvelar62.png" /></td><td>Dom Avelar</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Doron63.png" /></td><td>Doron</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_EngenhoVelhodaFederação64.png" /></td><td>Engenho Velho da Federação</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_EngenhoVelhodeBrotas65.png" /></td><td>Engenho Velho de Brotas</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Engomadeira66.png" /></td><td>Engomadeira</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_FazendaCoutos67.png" /></td><td>Fazenda Coutos</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_FazendaGrandedoRetiro68.png" /></td><td>Fazenda Grande do Retiro</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_FazendaGrandeI69.png" /></td><td>Fazenda Grande I</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_FazendaGrandeII70.png" /></td><td>Fazenda Grande II</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_FazendaGrandeIII71.png" /></td><td>Fazenda Grande III</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_FazendaGrandeIV72.png" /></td><td>Fazenda Grande IV</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Federação73.png" /></td><td>Federação</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Garcia74.png" /></td><td>Garcia</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Graça75.png" /></td><td>Graça</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_GranjasRuraisPresidenteVargas76.png" /></td><td>Granjas Rurais Presidente Vargas</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_HortoFlorestal77.png" /></td><td>Horto Florestal</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_IAPI78.png" /></td><td>IAPI</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_IlhaAmarela79.png" /></td><td>Ilha Amarela</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_IlhadeBomJesusdosPassos80.png" /></td><td>Ilha de Bom Jesus dos Passos</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_IlhadeMaré81.png" /></td><td>Ilha de Maré</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_IlhadosFradesIlhadeSantoAntônio82.png" /></td><td>Ilha dos Frades/Ilha de Santo Antônio</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Imbuí83.png" /></td><td>Imbuí</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Itacaranha84.png" /></td><td>Itacaranha</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Itaigara85.png" /></td><td>Itaigara</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Itapuã86.png" /></td><td>Itapuã</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Itinga87.png" /></td><td>Itinga</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_JaguaripeI88.png" /></td><td>Jaguaripe I</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_JardimArmação89.png" /></td><td>Jardim Armação</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_JardimCajazeiras90.png" /></td><td>Jardim Cajazeiras</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_JardimdasMargaridas91.png" /></td><td>Jardim das Margaridas</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_JardimNovaEsperança92.png" /></td><td>Jardim Nova Esperança</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_JardimSantoInácio93.png" /></td><td>Jardim Santo Inácio</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Lapinha94.png" /></td><td>Lapinha</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Liberdade95.png" /></td><td>Liberdade</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Lobato96.png" /></td><td>Lobato</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_LuizAnselmo97.png" /></td><td>Luiz Anselmo</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Macaúbas98.png" /></td><td>Macaúbas</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Mangueira99.png" /></td><td>Mangueira</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_MarechalRondon100.png" /></td><td>Marechal Rondon</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Mares101.png" /></td><td>Mares</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Massaranduba102.png" /></td><td>Massaranduba</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_MataEscura103.png" /></td><td>Mata Escura</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Matatu104.png" /></td><td>Matatu</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_MirantesdePeriperi105.png" /></td><td>Mirantes de Periperi</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_MonteSerrat106.png" /></td><td>Monte Serrat</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_MoradasdaLagoa107.png" /></td><td>Moradas da Lagoa</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Mussurunga108.png" /></td><td>Mussurunga</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Narandiba109.png" /></td><td>Narandiba</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Nazaré110.png" /></td><td>Nazaré</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_NordestedeAmaralina111.png" /></td><td>Nordeste de Amaralina</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_NovaBrasília112.png" /></td><td>Nova Brasília</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_NovaConstituinte113.png" /></td><td>Nova Constituinte</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_NovaEsperança114.png" /></td><td>Nova Esperança</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_NovaSussuarana115.png" /></td><td>Nova Sussuarana</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_NovoHorizonte116.png" /></td><td>Novo Horizonte</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_NovoMarotinho117.png" /></td><td>Novo Marotinho</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Ondina118.png" /></td><td>Ondina</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Palestina119.png" /></td><td>Palestina</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Paripe120.png" /></td><td>Paripe</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Patamares121.png" /></td><td>Patamares</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_PaudaLima122.png" /></td><td>Pau da Lima</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_PauMiúdo123.png" /></td><td>Pau Miúdo</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Periperi124.png" /></td><td>Periperi</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Pernambués125.png" /></td><td>Pernambués</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_PeroVaz126.png" /></td><td>Pero Vaz</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Piatã127.png" /></td><td>Piatã</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Pirajá128.png" /></td><td>Pirajá</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Pituaçu129.png" /></td><td>Pituaçu</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Pituba130.png" /></td><td>Pituba</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Plataforma131.png" /></td><td>Plataforma</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_PortoSecoPirajá132.png" /></td><td>Porto Seco Pirajá</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_PraiaGrande133.png" /></td><td>Praia Grande</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Resgate134.png" /></td><td>Resgate</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Retiro135.png" /></td><td>Retiro</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Ribeira136.png" /></td><td>Ribeira</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_RioSena137.png" /></td><td>Rio Sena</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_RioVermelho138.png" /></td><td>Rio Vermelho</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Roma139.png" /></td><td>Roma</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Saboeiro140.png" /></td><td>Saboeiro</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_SantaCruz141.png" /></td><td>Santa Cruz</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_SantaLuzia142.png" /></td><td>Santa Luzia</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_SantaMônica143.png" /></td><td>Santa Mônica</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_SantoAgostinho144.png" /></td><td>Santo Agostinho</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_SantoAntônio145.png" /></td><td>Santo Antônio</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_SãoCaetano146.png" /></td><td>São Caetano</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_SãoCristóvão147.png" /></td><td>São Cristóvão</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_SãoGonçalo148.png" /></td><td>São Gonçalo</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_SãoJoãodoCabrito149.png" /></td><td>São João do Cabrito</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_SãoMarcos150.png" /></td><td>São Marcos</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_SãoRafael151.png" /></td><td>São Rafael</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_SãoTomé152.png" /></td><td>São Tomé</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Saramandaia153.png" /></td><td>Saramandaia</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Saúde154.png" /></td><td>Saúde</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_SetedeAbril155.png" /></td><td>Sete de Abril</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_StellaMaris156.png" /></td><td>Stella Maris</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_STIEP157.png" /></td><td>STIEP</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Sussuarana158.png" /></td><td>Sussuarana</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Tororó159.png" /></td><td>Tororó</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Trobogy160.png" /></td><td>Trobogy</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Uruguai161.png" /></td><td>Uruguai</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_ValedasPedrinhas162.png" /></td><td>Vale das Pedrinhas</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_ValedosLagos163.png" /></td><td>Vale dos Lagos</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Valéria164.png" /></td><td>Valéria</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_VilaCanária165.png" /></td><td>Vila Canária</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_VilaLaura166.png" /></td><td>Vila Laura</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_VilaRuyBarbosaJardimCruzeiro167.png" /></td><td>Vila Ruy Barbosa\Jardim Cruzeiro</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_VistaAlegre168.png" /></td><td>Vista Alegre</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_Vitória169.png" /></td><td>Vitória</td></tr><tr><td style="text-align: center;"><img src="legend/BairrosSalvador2017_1_170.png" /></td><td></td></tr></table>', layer: layer_BairrosSalvador2017_1},
+            {label: "Google Satellite", layer: layer_GoogleSatellite_0},]
+        var lay = L.control.layers.tree(null, overlaysTree,{
+            //namedToggle: true,
+            //selectorBack: false,
+            //closedSymbol: '&#8862; &#x1f5c0;',
+            //openedSymbol: '&#8863; &#x1f5c1;',
+            //collapseAll: 'Collapse all',
+            //expandAll: 'Expand all',
+            collapsed: true,
+        });
+        lay.addTo(map);
+        setBounds();
+        </script>
+    </body>
+</html>
